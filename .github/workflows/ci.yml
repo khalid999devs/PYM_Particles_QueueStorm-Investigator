@@ -14,7 +14,7 @@ jobs:
       NODE_ENV: test
       USE_OPENAI: "false"
       OPENAI_API_KEY: ""
-      OPENAI_MODEL: "gpt-4o-mini"
+      OPENAI_MODEL: "gpt-5.4"
       OPENAI_TIMEOUT_MS: "7000"
       PORT: "8000"
 

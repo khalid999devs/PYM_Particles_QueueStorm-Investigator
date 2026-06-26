@@ -164,7 +164,7 @@ Safe wording uses official-channel review language such as “will review,” �
 
 ## MODELS
 
-Default mode: deterministic rule-based investigator.
+Default service behavior: deterministic rule-based investigator with optional OpenAI enhancement.
 
 Optional model: OpenAI API through environment variables:
 
@@ -173,7 +173,9 @@ Optional model: OpenAI API through environment variables:
 - `OPENAI_MODEL`
 - `OPENAI_TIMEOUT_MS`
 
-The model is used only for language understanding and response drafting. Evidence matching, schema enforcement, safety validation, and fallback behavior remain deterministic. The service works with `USE_OPENAI=false`, which is the recommended stable evaluation mode.
+The model is used only for language understanding and response drafting. Evidence matching, schema enforcement, safety validation, and fallback behavior remain deterministic.
+
+Configured OpenAI model: `gpt-5.4`. A personal OpenAI API key can be supplied through `OPENAI_API_KEY`.
 
 ## Setup
 
@@ -209,12 +211,14 @@ npm run test:samples
 npm run sample:output
 ```
 
+Automated tests and public sample validation run without OpenAI calls, so they do not use personal API credit.
+
 ## Public Sample Validation
 
 Public-style sample cases are stored in:
 
 ```txt
-samples/public-sample-cases.json
+samples/SUST_Preli_Sample_Cases.json
 ```
 
 Run:
@@ -318,9 +322,9 @@ Render free services may sleep after inactivity. Wake the service with `/health`
 ```env
 NODE_ENV=development
 PORT=8000
-USE_OPENAI=false
+USE_OPENAI=true
 OPENAI_API_KEY=
-OPENAI_MODEL=gpt-4o-mini
+OPENAI_MODEL=gpt-5.4
 OPENAI_TIMEOUT_MS=7000
 LOG_LEVEL=debug
 ```
@@ -329,8 +333,8 @@ On Render, set secrets in the dashboard only. Do not commit real keys.
 
 ## Known Limitations
 
-- Rule-based evidence matching may miss unseen phrasing or unusual transaction narratives.
-- AI is disabled by default for reliability and predictable judging behavior.
+- Analysis quality depends on the complaint details and transaction history supplied in the request.
+- OpenAI enhancement requires a valid personal API key and available API credit.
 - There is no integration with a real payment ledger or dispute-management system.
 - There is no database because each official request contains the full stateless analysis input.
 - Public sample cases are representative and do not guarantee hidden judge coverage.

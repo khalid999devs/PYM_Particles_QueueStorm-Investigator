@@ -103,12 +103,12 @@ export const routeCase = (
   const reasonCodes: string[] = [`department_${department}`, `severity_${severity}`];
   const reviewBecauseHighRisk =
     caseType === "phishing_or_social_engineering" ||
-    caseType === "wrong_transfer" ||
+    (caseType === "wrong_transfer" && Boolean(transaction)) ||
     caseType === "duplicate_payment" ||
     severity === "critical" ||
-    isHighValue(transaction);
+    (caseType !== "merchant_settlement_delay" && isHighValue(transaction));
   const reviewBecauseAmbiguousFinancial =
-    verdict !== "consistent" &&
+    verdict === "inconsistent" &&
     !["other", "phishing_or_social_engineering"].includes(caseType);
   const reviewBecauseAgentPending =
     caseType === "agent_cash_in_issue" &&

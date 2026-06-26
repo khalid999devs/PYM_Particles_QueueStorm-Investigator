@@ -186,6 +186,7 @@ export const findDuplicatePayment = (
   transactions: Transaction[],
   facts: ComplaintFacts
 ): TransactionMatchResult | null => {
+  // Treat close identical completed payments as one duplicate pattern; choose the later payment.
   const payments = transactions
     .filter((transaction) => transaction.type === "payment" && transaction.status === "completed")
     .sort((left, right) => Date.parse(left.timestamp) - Date.parse(right.timestamp));
@@ -221,6 +222,7 @@ const hasAmbiguousSameAmountCandidates = (
   facts: ComplaintFacts,
   caseType: CaseType
 ): boolean => {
+  // Amount-only matches across multiple candidates are insufficient for a safe transaction pick.
   if (facts.amounts.length === 0 || facts.phones.length > 0 || facts.timeHints.length > 0) {
     return false;
   }

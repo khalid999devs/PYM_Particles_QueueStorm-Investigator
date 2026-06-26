@@ -13,7 +13,7 @@ const envSchema = z.object({
   PORT: z.coerce.number().int().positive().default(8000),
   USE_OPENAI: booleanStringSchema,
   OPENAI_API_KEY: z.string().default(""),
-  OPENAI_MODEL: z.string().default("gpt-4o-mini"),
+  OPENAI_MODEL: z.string().default("gpt-5.4"),
   OPENAI_TIMEOUT_MS: z.coerce.number().int().positive().max(7000).default(7000),
   LOG_LEVEL: z.string().default("info")
 });

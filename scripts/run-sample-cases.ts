@@ -14,7 +14,7 @@ import { containsUnsafeText } from "../src/safety/safe-text";
 const sampleCaseSchema = z.object({
   id: z.string(),
   input: analyzeTicketRequestSchema,
-  expected: z.object({
+  expected_output: z.object({
     ticket_id: z.string(),
     relevant_transaction_id: z.string().nullable(),
     evidence_verdict: z.enum(evidenceVerdictValues),
@@ -25,23 +25,27 @@ const sampleCaseSchema = z.object({
   })
 });
 
-const sampleCasesSchema = z.array(sampleCaseSchema);
+const samplePackSchema = z.object({
+  _meta: z.unknown().optional(),
+  cases: z.array(sampleCaseSchema)
+});
 
 const main = async (): Promise<void> => {
-  const samplePath = join(process.cwd(), "samples", "public-sample-cases.json");
-  const sampleCases = sampleCasesSchema.parse(JSON.parse(readFileSync(samplePath, "utf8")) as unknown);
+  const samplePath = join(process.cwd(), "samples", "SUST_Preli_Sample_Cases.json");
+  const samplePack = samplePackSchema.parse(JSON.parse(readFileSync(samplePath, "utf8")) as unknown);
+  const sampleCases = samplePack.cases;
   let passed = 0;
 
   for (const sample of sampleCases) {
     const output = await analyzeTicket(sample.input, { useAi: false });
     const fieldChecks = [
-      output.ticket_id === sample.expected.ticket_id,
-      output.relevant_transaction_id === sample.expected.relevant_transaction_id,
-      output.evidence_verdict === sample.expected.evidence_verdict,
-      output.case_type === sample.expected.case_type,
-      output.department === sample.expected.department,
-      output.severity === sample.expected.severity,
-      output.human_review_required === sample.expected.human_review_required,
+      output.ticket_id === sample.expected_output.ticket_id,
+      output.relevant_transaction_id === sample.expected_output.relevant_transaction_id,
+      output.evidence_verdict === sample.expected_output.evidence_verdict,
+      output.case_type === sample.expected_output.case_type,
+      output.department === sample.expected_output.department,
+      output.severity === sample.expected_output.severity,
+      output.human_review_required === sample.expected_output.human_review_required,
       !containsUnsafeText(output.customer_reply),
       !containsUnsafeText(output.recommended_next_action)
     ];
@@ -51,7 +55,7 @@ const main = async (): Promise<void> => {
       console.log(`PASS ${sample.id}`);
     } else {
       console.error(`FAIL ${sample.id}`);
-      console.error(JSON.stringify({ expected: sample.expected, output }, null, 2));
+      console.error(JSON.stringify({ expected: sample.expected_output, output }, null, 2));
     }
   }
 

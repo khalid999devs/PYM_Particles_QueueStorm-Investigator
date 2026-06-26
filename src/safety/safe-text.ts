@@ -34,6 +34,7 @@ export const containsUnsafeText = (value: string): boolean => {
   }
 
   for (const match of lower.matchAll(secretRequestPattern)) {
+    // Safe warnings say not to share secrets; only direct requests are unsafe.
     if (!hasSafeNegationPrefix(lower, match.index ?? 0)) {
       return true;
     }

@@ -9,14 +9,17 @@ const sampleCaseSchema = z.object({
   input: analyzeTicketRequestSchema
 });
 
-const sampleCasesSchema = z.array(sampleCaseSchema);
+const samplePackSchema = z.object({
+  _meta: z.unknown().optional(),
+  cases: z.array(sampleCaseSchema)
+});
 
 const main = async (): Promise<void> => {
   const samplesDir = join(process.cwd(), "samples");
-  const samplePath = join(samplesDir, "public-sample-cases.json");
+  const samplePath = join(samplesDir, "SUST_Preli_Sample_Cases.json");
   const outputPath = join(samplesDir, "sample-output.json");
-  const sampleCases = sampleCasesSchema.parse(JSON.parse(readFileSync(samplePath, "utf8")) as unknown);
-  const firstSample = sampleCases[0];
+  const samplePack = samplePackSchema.parse(JSON.parse(readFileSync(samplePath, "utf8")) as unknown);
+  const firstSample = samplePack.cases[0];
 
   if (!firstSample) {
     throw new Error("No public sample cases found");

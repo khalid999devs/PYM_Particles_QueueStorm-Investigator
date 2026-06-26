@@ -15,7 +15,7 @@ import { containsUnsafeText } from "../src/safety/safe-text";
 const sampleCaseSchema = z.object({
   id: z.string(),
   input: analyzeTicketRequestSchema,
-  expected: z.object({
+  expected_output: z.object({
     ticket_id: z.string(),
     relevant_transaction_id: z.string().nullable(),
     evidence_verdict: z.enum(evidenceVerdictValues),
@@ -27,25 +27,28 @@ const sampleCaseSchema = z.object({
 });
 
 const sampleCases = z
-  .array(sampleCaseSchema)
+  .object({
+    _meta: z.unknown().optional(),
+    cases: z.array(sampleCaseSchema)
+  })
   .parse(
     JSON.parse(
-      readFileSync(join(process.cwd(), "samples", "public-sample-cases.json"), "utf8")
+      readFileSync(join(process.cwd(), "samples", "SUST_Preli_Sample_Cases.json"), "utf8")
     ) as unknown
-  );
+  ).cases;
 
 describe("public sample cases", () => {
   for (const sample of sampleCases) {
     it(`passes ${sample.id}`, async () => {
       const output = await analyzeTicket(sample.input, { useAi: false });
 
-      expect(output.ticket_id).toBe(sample.expected.ticket_id);
-      expect(output.relevant_transaction_id).toBe(sample.expected.relevant_transaction_id);
-      expect(output.evidence_verdict).toBe(sample.expected.evidence_verdict);
-      expect(output.case_type).toBe(sample.expected.case_type);
-      expect(output.department).toBe(sample.expected.department);
-      expect(output.severity).toBe(sample.expected.severity);
-      expect(output.human_review_required).toBe(sample.expected.human_review_required);
+      expect(output.ticket_id).toBe(sample.expected_output.ticket_id);
+      expect(output.relevant_transaction_id).toBe(sample.expected_output.relevant_transaction_id);
+      expect(output.evidence_verdict).toBe(sample.expected_output.evidence_verdict);
+      expect(output.case_type).toBe(sample.expected_output.case_type);
+      expect(output.department).toBe(sample.expected_output.department);
+      expect(output.severity).toBe(sample.expected_output.severity);
+      expect(output.human_review_required).toBe(sample.expected_output.human_review_required);
       expect(containsUnsafeText(output.customer_reply)).toBe(false);
       expect(containsUnsafeText(output.recommended_next_action)).toBe(false);
     });
