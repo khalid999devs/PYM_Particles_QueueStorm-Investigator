@@ -12,6 +12,10 @@ export interface ComplaintFacts {
   normalizedText: string;
   amounts: number[];
   phones: string[];
+  transactionIds: string[];
+  agentIds: string[];
+  senderIds: string[];
+  links: string[];
   timeHints: TimeHint[];
   hasCredentialTerms: boolean;
 }
@@ -106,6 +110,23 @@ export const extractPhones = (text: string): string[] => {
   return uniqueStrings(phones);
 };
 
+const extractPatternValues = (text: string, pattern: RegExp): string[] =>
+  uniqueStrings([...text.matchAll(pattern)].map((match) => compactWhitespace(match[1] ?? match[0] ?? "")));
+
+export const extractTransactionIds = (text: string): string[] =>
+  extractPatternValues(text, /\b((?:TXN|TRX|TRANS|PAY|PMT)-[A-Z0-9-]+)\b/gi).map((value) =>
+    value.toUpperCase()
+  );
+
+export const extractAgentIds = (text: string): string[] =>
+  extractPatternValues(text, /\b(AGENT-[A-Z0-9-]+)\b/gi).map((value) => value.toUpperCase());
+
+export const extractSenderIds = (text: string): string[] =>
+  extractPatternValues(text, /\b(?:sender id|sender|from)\s*[:#-]?\s*([A-Z][A-Z0-9_-]{2,20})\b/gi);
+
+export const extractLinks = (text: string): string[] =>
+  uniqueStrings([...text.matchAll(/\bhttps?:\/\/[^\s<>"']+/gi)].map((match) => match[0] ?? ""));
+
 export const extractTimeHints = (text: string): TimeHint[] => {
   const normalized = normalizeText(text);
   const hints: TimeHint[] = [];
@@ -145,6 +166,10 @@ export const extractComplaintFacts = (complaint: string): ComplaintFacts => {
     normalizedText,
     amounts: extractAmounts(originalText),
     phones: extractPhones(originalText),
+    transactionIds: extractTransactionIds(originalText),
+    agentIds: extractAgentIds(originalText),
+    senderIds: extractSenderIds(originalText),
+    links: extractLinks(originalText),
     timeHints: extractTimeHints(originalText),
     hasCredentialTerms: credentialPatterns.some((pattern) => pattern.test(originalText))
   };

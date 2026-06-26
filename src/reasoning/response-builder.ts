@@ -89,14 +89,19 @@ export const buildInvestigationResponse = ({
     case_type: caseType,
     severity: routing.severity,
     department: routing.department,
-    agent_summary: buildAgentSummary(caseType, verdict, transaction, facts),
+    agent_summary: buildAgentSummary(caseType, verdict, transaction, facts, {
+      ambiguous,
+      reasonCodes,
+      transactions: input.transaction_history
+    }),
     recommended_next_action: buildRecommendedAction(
       caseType,
       verdict,
       transaction,
-      routing.department
+      routing.department,
+      { ambiguous }
     ),
-    customer_reply: buildCustomerReply(caseType, transaction, input.language),
+    customer_reply: buildCustomerReply(caseType, transaction, input.language, { ambiguous }),
     human_review_required: routing.humanReviewRequired,
     confidence: roundConfidence(confidenceFor(caseType, verdict, matchScore, ambiguous)),
     reason_codes: allReasonCodes

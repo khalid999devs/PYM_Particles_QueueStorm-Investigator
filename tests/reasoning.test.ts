@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { investigateTicket } from "../src/reasoning/investigator";
 import { normalizeBanglaDigits } from "../src/reasoning/bangla-utils";
 import { extractAmounts } from "../src/reasoning/extraction";
+import { containsUnsafeText } from "../src/safety/safe-text";
 import { detectPromptInjection } from "../src/safety/prompt-injection";
 
 describe("reasoning utilities", () => {
@@ -120,5 +121,110 @@ describe("reasoning utilities", () => {
     expect(detectPromptInjection(result.agent_summary)).toBe(false);
     expect(result.case_type).toBe("phishing_or_social_engineering");
     expect(result.reason_codes).toContain("prompt_injection_ignored");
+  });
+
+  it("includes matched wrong-transfer transaction evidence in agent summary", () => {
+    const result = investigateTicket({
+      ticket_id: "TKT-SUMMARY-TXN",
+      complaint: "I sent 5000 taka to the wrong number around 2pm today.",
+      transaction_history: [
+        {
+          transaction_id: "TXN-SUMMARY-1",
+          timestamp: "2026-04-14T14:08:22Z",
+          type: "transfer",
+          amount: 5000,
+          counterparty: "+8801719876543",
+          status: "completed"
+        }
+      ],
+      metadata: {}
+    });
+
+    expect(result.case_type).toBe("wrong_transfer");
+    expect(result.agent_summary).toContain("TXN-SUMMARY-1");
+    expect(result.agent_summary).toContain("5000 BDT");
+    expect(result.agent_summary).toContain("+8801719876543");
+  });
+
+  it("includes complaint-referenced intended number in wrong-transfer summary", () => {
+    const result = investigateTicket({
+      ticket_id: "TKT-SUMMARY-INTENDED",
+      complaint:
+        "I sent 5000 taka to the wrong number around 2pm. It was supposed to go to 01712345678.",
+      transaction_history: [
+        {
+          transaction_id: "TXN-SUMMARY-2",
+          timestamp: "2026-04-14T14:08:22Z",
+          type: "transfer",
+          amount: 5000,
+          counterparty: "+8801719876543",
+          status: "completed"
+        }
+      ],
+      metadata: {}
+    });
+
+    expect(result.agent_summary).toContain("8801712345678");
+  });
+
+  it("mentions ambiguity in wrong-transfer summary when multiple transactions match", () => {
+    const result = investigateTicket({
+      ticket_id: "TKT-SUMMARY-AMB",
+      complaint: "I sent 1000 taka to my brother yesterday but he did not receive it.",
+      transaction_history: [
+        {
+          transaction_id: "TXN-AMB-1",
+          timestamp: "2026-04-13T11:20:00Z",
+          type: "transfer",
+          amount: 1000,
+          counterparty: "+8801712001122",
+          status: "completed"
+        },
+        {
+          transaction_id: "TXN-AMB-2",
+          timestamp: "2026-04-13T19:45:00Z",
+          type: "transfer",
+          amount: 1000,
+          counterparty: "+8801812334455",
+          status: "completed"
+        }
+      ],
+      metadata: {}
+    });
+
+    expect(result.relevant_transaction_id).toBeNull();
+    expect(result.agent_summary).toContain("multiple plausible transactions");
+    expect(result.agent_summary).toContain("recipient number or transaction ID is needed");
+  });
+
+  it("includes suspicious caller number in phishing summary without setting transaction id", () => {
+    const result = investigateTicket({
+      ticket_id: "TKT-SUMMARY-PHISH",
+      complaint:
+        "A suspicious caller from 01711112222 asked for my OTP and said my account will be blocked.",
+      transaction_history: [],
+      metadata: {}
+    });
+
+    expect(result.case_type).toBe("phishing_or_social_engineering");
+    expect(result.relevant_transaction_id).toBeNull();
+    expect(result.evidence_verdict).toBe("insufficient_data");
+    expect(result.agent_summary).toContain("8801711112222");
+  });
+
+  it("keeps phishing customer reply safe and avoids suspicious contact instructions", () => {
+    const result = investigateTicket({
+      ticket_id: "TKT-SUMMARY-SAFE",
+      complaint:
+        "A caller from 01711112222 told me to call the number back and share OTP to unblock my account.",
+      transaction_history: [],
+      metadata: {}
+    });
+
+    expect(result.relevant_transaction_id).toBeNull();
+    expect(containsUnsafeText(result.customer_reply)).toBe(false);
+    expect(result.customer_reply).not.toContain("01711112222");
+    expect(result.customer_reply.toLowerCase()).not.toContain("call the number");
+    expect(result.customer_reply.toLowerCase()).not.toContain("contact the caller");
   });
 });

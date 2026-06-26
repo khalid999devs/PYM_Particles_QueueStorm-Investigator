@@ -34,7 +34,7 @@
     "case_type": "wrong_transfer",
     "severity": "high",
     "department": "dispute_resolution",
-    "agent_summary": "Customer reports a possible wrong transfer involving 5000 BDT; evidence verdict is consistent for TXN-9101.",
+    "agent_summary": "Customer reports a possible wrong transfer; amount 5000 BDT, transaction TXN-9101, counterparty +8801719876543, complaint referenced intended or wrong number(s) 8801712345678. Evidence verdict is consistent.",
     "recommended_next_action": "Verify TXN-9101 details and initiate the wrong-transfer dispute workflow per policy.",
     "customer_reply": "We have noted your concern about transaction TXN-9101. Please do not share your PIN or OTP with anyone. Our dispute team will review the case and contact you through official support channels.",
     "human_review_required": true,
@@ -53,5 +53,5 @@
       "human_review_required"
     ]
   },
-  "generated_at": "2026-06-26T15:32:34.701Z"
+  "generated_at": "2026-06-26T16:13:19.254Z"
 }
