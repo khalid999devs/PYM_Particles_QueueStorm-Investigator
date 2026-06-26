@@ -31,6 +31,8 @@ No frontend, database, Docker setup, authentication, or external service is requ
 
 ## Architecture Overview
 
+![QueueStorm Investigator architecture](architecture.png)
+
 Request flow:
 
 ```txt
