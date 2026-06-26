@@ -105,6 +105,7 @@ describe("reasoning utilities", () => {
 
     expect(result.relevant_transaction_id).toBeNull();
     expect(result.evidence_verdict).toBe("insufficient_data");
+    expect(result.human_review_required).toBe(false);
   });
 
   it("detects phishing and prompt injection attempts", () => {

@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:samples": "tsx scripts/run-sample-cases.ts",
-    "sample:output": "tsx scripts/generate-sample-output.ts"
+    "sample:output": "tsx scripts/generate-sample-output.ts",
+    "audit:checks": "tsx scripts/audit-checks.ts"
   },
   "engines": {
     "node": ">=24 <25",

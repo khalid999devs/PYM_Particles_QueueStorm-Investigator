@@ -49,7 +49,14 @@ export const analyzeTicket = async (
 
   if (shouldUseAi) {
     const normalizedInput = normalizeAnalyzeInput(input);
-    const enhancement = await getAiEnhancement(normalizedInput, deterministic);
+    let enhancement: Awaited<ReturnType<typeof getAiEnhancement>> = null;
+
+    try {
+      enhancement = await getAiEnhancement(normalizedInput, deterministic);
+    } catch {
+      enhancement = null;
+    }
+
     response = applyAiEnhancement(deterministic, enhancement);
   }
 

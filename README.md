@@ -177,6 +177,8 @@ The model is used only for language understanding and response drafting. Evidenc
 
 Configured OpenAI model: `gpt-5.4`. A personal OpenAI API key can be supplied through `OPENAI_API_KEY`.
 
+Cost control: deterministic investigation runs first, OpenAI is limited to one optional enhancement call per ticket, automated tests run with OpenAI disabled, and provider timeout/fallback prevents retries from blocking judging.
+
 ## Setup
 
 ```bash

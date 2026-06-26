@@ -3,21 +3,30 @@ import type { AnalyzeTicketResponse, CaseType } from "../modules/analyze-ticket/
 const unsafePromisePatterns = [
   /\bwe will refund\b/i,
   /\bwe have refunded\b/i,
+  /\brefund (?:is )?(?:approved|guaranteed|complete|completed)\b/i,
   /\brefund is confirmed\b/i,
-  /\breversal is complete\b/i,
+  /\breversal (?:is )?(?:complete|completed|approved|guaranteed)\b/i,
   /\bwe reversed\b/i,
-  /\brecovery (?:is )?complete\b/i,
+  /\brecovery (?:is )?(?:complete|completed|guaranteed)\b/i,
   /\baccount has been unblocked\b/i,
+  /\baccount (?:unblock|unblocking) (?:is )?(?:complete|completed|approved)\b/i,
+  /\bguaranteed (?:money return|refund|reversal|recovery)\b/i,
+  /\bmoney return (?:is )?guaranteed\b/i,
   /\bdispute (?:is )?approved\b/i,
   /\bcontact the caller\b/i,
   /\bcall the number that contacted you\b/i
 ];
 
 const secretRequestPattern =
-  /\b(share|provide|send|give)\s+(?:us\s+|your\s+|the\s+)?(?:otp|pin|password|cvv|secret credentials?|full card number|card number)\b/gi;
+  /\b(share|provide|send|give|tell|submit|enter|type)\s+(?:us\s+|your\s+|my\s+|the\s+)?(?:otp|pin|password|cvv|secret credentials?|full card number|card number|verification code)\b/gi;
 
 const unsafeCredentialPhrasePattern =
-  /\b(full card number|provide card number|provide cvv|share cvv|send password|provide password|share password)\b/gi;
+  /\b(full card number|provide card number|provide cvv|share cvv|send password|provide password|share password|ask(?:ed)? (?:me|you|the customer|customer)? ?for (?:your |my |the )?(?:otp|pin|password|cvv|verification code)|verify (?:with|using|by) (?:your |my |the )?(?:otp|pin|password|cvv|verification code))\b/gi;
+
+const banglaUnsafeCredentialPatterns = [
+  /(?:ওটিপি|otp|পিন|pin|পাসওয়ার্ড|password).{0,24}(?:দিন|দাও|পাঠান|বলুন|জানান|শেয়ার করুন|din|dao|bolun|janan|share korun|send korun)/i,
+  /(?:দিন|দাও|পাঠান|বলুন|জানান|শেয়ার করুন|din|dao|bolun|janan|share korun|send korun).{0,24}(?:ওটিপি|otp|পিন|pin|পাসওয়ার্ড|password)/i
+];
 
 const hasSafeNegationPrefix = (text: string, index: number): boolean => {
   const prefix = text.slice(Math.max(0, index - 24), index).toLowerCase();
@@ -42,6 +51,12 @@ export const containsUnsafeText = (value: string): boolean => {
 
   for (const match of lower.matchAll(unsafeCredentialPhrasePattern)) {
     if (!hasSafeNegationPrefix(lower, match.index ?? 0)) {
+      return true;
+    }
+  }
+
+  for (const pattern of banglaUnsafeCredentialPatterns) {
+    if (pattern.test(value)) {
       return true;
     }
   }
