@@ -2,6 +2,27 @@
 
 Backend-only Express + TypeScript API for the QueueStorm Investigator preliminary round. The service analyzes one complaint together with recent transaction history and returns a safe, evidence-grounded support investigation result.
 
+## Live Deployment
+
+Public Render base URL:
+
+```txt
+https://pym-particles-queuestorm-investigator.onrender.com
+```
+
+Public endpoints:
+
+- `GET https://pym-particles-queuestorm-investigator.onrender.com/health`
+- `POST https://pym-particles-queuestorm-investigator.onrender.com/analyze-ticket`
+
+Deployment verification on June 26, 2026:
+
+- `/health` returned exactly `{"status":"ok"}`.
+- All 10 public sample cases returned HTTP 200.
+- All 10 deployed responses passed the official response schema.
+- All 10 deployed responses matched the expected core sample fields.
+- All 10 deployed responses passed output safety checks.
+
 ## Problem Summary
 
 The API acts as a digital finance support copilot. It identifies the likely complaint type, finds the relevant transaction when the evidence is clear, determines whether the transaction history supports the claim, routes the case to the right department, and drafts a safe customer reply.
@@ -47,6 +68,13 @@ Core folders:
 - Optional OpenAI API
 
 ## Endpoints
+
+Base URLs:
+
+```txt
+Local:  http://127.0.0.1:8000
+Render: https://pym-particles-queuestorm-investigator.onrender.com
+```
 
 ### `GET /health`
 
@@ -99,7 +127,7 @@ Successful responses include only the official fields:
   "case_type": "wrong_transfer",
   "severity": "high",
   "department": "dispute_resolution",
-  "agent_summary": "Customer reports a possible wrong transfer involving 5000 BDT; evidence verdict is consistent for TXN-9101.",
+  "agent_summary": "Customer reports a possible wrong transfer; amount 5000 BDT, transaction TXN-9101, counterparty +8801719876543, complaint referenced intended or wrong number(s) 8801712345678. Evidence verdict is consistent.",
   "recommended_next_action": "Verify TXN-9101 details and initiate the wrong-transfer dispute workflow per policy.",
   "customer_reply": "We have noted your concern about transaction TXN-9101. Please do not share your PIN or OTP with anyone. Our dispute team will review the case and contact you through official support channels.",
   "human_review_required": true,
@@ -122,7 +150,7 @@ The deterministic investigator is the primary engine. It does not classify from 
 It extracts:
 
 - amounts, including Bangla digits and currency terms,
-- phone numbers and counterparties,
+- phone numbers, referenced transaction IDs, sender IDs, agent IDs, links, and counterparties,
 - simple time hints such as `2pm`, `morning`, `today`, and Bangla equivalents,
 - Bangla/Banglish complaint signals,
 - phishing and credential-risk signals.
@@ -235,14 +263,14 @@ The required generated sample output is stored in:
 samples/sample-output.json
 ```
 
-## Sample Request
+## Deployed Sample Request
 
 ```bash
-curl -X POST http://127.0.0.1:8000/analyze-ticket \
+curl -X POST https://pym-particles-queuestorm-investigator.onrender.com/analyze-ticket \
   -H "Content-Type: application/json" \
   -d '{
     "ticket_id": "TKT-001",
-    "complaint": "I sent 5000 taka to a wrong number around 2pm today. The number was +8801719876543.",
+    "complaint": "I sent 5000 taka to a wrong number around 2pm today. The number was supposed to be 01712345678 but I think I typed it wrong. The person is not responding to my call.",
     "language": "en",
     "channel": "in_app_chat",
     "user_type": "customer",
@@ -260,6 +288,12 @@ curl -X POST http://127.0.0.1:8000/analyze-ticket \
   }'
 ```
 
+For local testing, use the same body with:
+
+```txt
+http://127.0.0.1:8000/analyze-ticket
+```
+
 ## Sample Response
 
 ```json
@@ -270,7 +304,7 @@ curl -X POST http://127.0.0.1:8000/analyze-ticket \
   "case_type": "wrong_transfer",
   "severity": "high",
   "department": "dispute_resolution",
-  "agent_summary": "Customer reports a possible wrong transfer involving 5000 BDT; evidence verdict is consistent for TXN-9101.",
+  "agent_summary": "Customer reports a possible wrong transfer; amount 5000 BDT, transaction TXN-9101, counterparty +8801719876543, complaint referenced intended or wrong number(s) 8801712345678. Evidence verdict is consistent.",
   "recommended_next_action": "Verify TXN-9101 details and initiate the wrong-transfer dispute workflow per policy.",
   "customer_reply": "We have noted your concern about transaction TXN-9101. Please do not share your PIN or OTP with anyone. Our dispute team will review the case and contact you through official support channels.",
   "human_review_required": true,
@@ -298,7 +332,8 @@ Create a direct Render Web Service.
 
 ```txt
 Runtime: Node
-Build Command: npm install && npm run build
+Root Directory: leave blank
+Build Command: npm install --include=dev && npm run build
 Start Command: npm start
 Health Check Path: /health
 ```
@@ -308,7 +343,7 @@ The server binds to `0.0.0.0` and reads `PORT` from the environment.
 After deployment:
 
 ```bash
-curl https://your-service.onrender.com/health
+curl https://pym-particles-queuestorm-investigator.onrender.com/health
 ```
 
 Expected:
@@ -321,6 +356,8 @@ Render free services may sleep after inactivity. Wake the service with `/health`
 
 ## Environment Variables
 
+Local development:
+
 ```env
 NODE_ENV=development
 PORT=8000
@@ -329,6 +366,17 @@ OPENAI_API_KEY=
 OPENAI_MODEL=gpt-5.4
 OPENAI_TIMEOUT_MS=7000
 LOG_LEVEL=debug
+```
+
+Render production:
+
+```env
+NODE_ENV=production
+USE_OPENAI=true
+OPENAI_API_KEY=<set in Render dashboard>
+OPENAI_MODEL=gpt-5.4
+OPENAI_TIMEOUT_MS=7000
+LOG_LEVEL=info
 ```
 
 On Render, set secrets in the dashboard only. Do not commit real keys.
