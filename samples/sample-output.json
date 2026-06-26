@@ -1,0 +1,50 @@
+{
+  "sample_case_id": "public_wrong_transfer",
+  "input": {
+    "ticket_id": "TKT-001",
+    "complaint": "I sent 5000 taka to a wrong number around 2pm today. The number was +8801719876543.",
+    "language": "en",
+    "channel": "in_app_chat",
+    "user_type": "customer",
+    "campaign_context": "boishakh_bonanza_day_1",
+    "transaction_history": [
+      {
+        "transaction_id": "TXN-9101",
+        "timestamp": "2026-04-14T14:08:22Z",
+        "type": "transfer",
+        "amount": 5000,
+        "counterparty": "+8801719876543",
+        "status": "completed"
+      }
+    ],
+    "metadata": {}
+  },
+  "output": {
+    "ticket_id": "TKT-001",
+    "relevant_transaction_id": "TXN-9101",
+    "evidence_verdict": "consistent",
+    "case_type": "wrong_transfer",
+    "severity": "high",
+    "department": "dispute_resolution",
+    "agent_summary": "Customer reports a possible wrong transfer involving 5000 BDT; evidence verdict is consistent for TXN-9101.",
+    "recommended_next_action": "Verify TXN-9101 details and initiate the wrong-transfer dispute workflow per policy.",
+    "customer_reply": "We have noted your concern about transaction TXN-9101. Please do not share your PIN or OTP with anyone. Our dispute team will review the case and contact you through official support channels.",
+    "human_review_required": true,
+    "confidence": 0.93,
+    "reason_codes": [
+      "wrong_transfer",
+      "consistent",
+      "wrong_transfer_signal",
+      "amount_match",
+      "transaction_type_match",
+      "counterparty_match",
+      "status_match",
+      "time_hint_match",
+      "transaction_match",
+      "department_dispute_resolution",
+      "severity_high",
+      "human_review_required"
+    ]
+  },
+  "generated_at": "2026-06-26T14:19:24.050Z"
+}

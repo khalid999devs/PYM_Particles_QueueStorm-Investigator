@@ -1,0 +1,40 @@
+{
+  "name": "queuestorm-investigator",
+  "version": "1.0.0",
+  "description": "Backend-only QueueStorm Investigator API for team PYM_Particles.",
+  "main": "dist/src/server.js",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "build": "tsc",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/src/server.js",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:samples": "tsx scripts/run-sample-cases.ts",
+    "sample:output": "tsx scripts/generate-sample-output.ts"
+  },
+  "engines": {
+    "node": ">=24 <25",
+    "npm": ">=10"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^5.1.0",
+    "helmet": "^8.0.0",
+    "openai": "^4.86.1",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "zod": "^3.24.2"
+  },
+  "devDependencies": {
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.10",
+    "@types/supertest": "^6.0.2",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.0.8"
+  }
+}
